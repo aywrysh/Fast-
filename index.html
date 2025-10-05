@@ -20,9 +20,9 @@
       margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Kufi Arabic", Cairo, Tahoma, sans-serif;
       background:#fff; color:var(--ink);
 
-      /* ✅ تعديل بسيط للتمرير والحماية من تغطية الشريط السفلي */
-      min-height:100vh;              /* بدل height:100vh */
-      overflow-y:auto;               /* بدل overflow:hidden */
+      /* تمرير ناعم + حماية من تغطية الشريط السفلي */
+      min-height:100vh;
+      overflow-y:auto;
       -webkit-overflow-scrolling:touch;
       touch-action:pan-y;
       padding:12px;
@@ -31,7 +31,7 @@
       display:flex; align-items:center; justify-content:center;
     }
 
-    /* إطار بنسبة الهاتف ليطابق الصورة حرفياً */
+    /* إطار بنسبة الهاتف */
     .frame{
       width:min(430px, 96vw);
       height:min(92vh, 820px);
@@ -40,11 +40,10 @@
 
     /* 1) شريط علوي أخضر */
     .hero{
-      background:var(--teal); border-radius:0; /* ← بدون انحناء فقط */
+      background:var(--teal); border-radius:0;
       display:grid; place-items:center; position:relative;
     }
     .hero .label{ color:rgba(0,0,0,.5); font-weight:800; font-size:40px; letter-spacing:.2px }
-    /* صورة محلية تغطي الشريط (تضعها أنت باسم ايقونه.png) */
     .hero .hero-img{
       width:90%;
       height:100%;
@@ -52,18 +51,16 @@
       display:block;
     }
 
-    /* 2) صندوق الأيقونات 2×3 بنفس ألوان/ترتيب الصورة */
+    /* 2) صندوق الأيقونات */
     .icons-panel{
       background:var(--panel); border-radius:var(--radius-lg); padding:14px;
       display:grid; grid-template-columns:repeat(3,1fr); grid-auto-rows:1fr; align-items:center; justify-items:center; gap:14px;
     }
     .round{
       width:var(--circle); height:var(--circle); border-radius:999px; display:grid; place-items:center; cursor:pointer; position:relative;
-      /* حلقتان بيضاوان كما في الصورة */
       box-shadow: 0 0 0 3px #fff, 0 0 0 6px rgba(255,255,255,.9);
     }
     .round img{ width:54%; height:54%; object-fit:contain }
-    /* ألوان الدوائر وترتيبها: (أعلى) خمري، ليموني، بنفسجي — (أسفل) أزرق فاتح، أخضر، أصفر */
     .maroon{ background:#7b173e }
     .lime  { background:#9acd32 }
     .purple{ background:#5b3ea6 }
@@ -71,7 +68,7 @@
     .green { background:#0ea37b }
     .amber { background:#f2c230 }
 
-    /* 3) شريط أخضر ثانٍ + كلمة "صوره" */
+    /* 3) شريط أخضر ثانٍ */
     .image-box{
       background:var(--teal); border-radius:var(--radius-xl);
       display:grid; place-items:center; position:relative;
@@ -88,32 +85,49 @@
     }
     @keyframes scrollR{ from{ transform:translateX(-100%) } to{ transform:translateX(100%) } }
 
-    /* تسميات الأزرار (أضفتها فقط تحت كل زر) */
     .icon-item{ display:grid; justify-items:center; align-content:start; gap:6px }
     .btn-label{ font-weight:800; font-size:14px; color:var(--ink) }
 
-    /* لمس ناعم */
     .round, .hero, .image-box, .icons-panel, .bar{ -webkit-tap-highlight-color: transparent; }
     
     .image-box .image-img{
       width:100%;
       height:100%;
-      object-fit:cover;   /* تغطي كامل الصندوق بدون تشويه */
+      object-fit:cover;
       display:block;
-      border-radius:inherit; /* تحافظ على نفس تقويس الصندوق */
-    } 
-    
+      border-radius:inherit;
+    }
+
+    /* ——— تحسين العرض على الكمبيوتر/الشاشات الكبيرة فقط (بدون تغيير العناصر) ——— */
+    @media (min-width: 1024px){
+      .frame{
+        width: min(640px, 70vw);         /* توسيع الإطار */
+        height: min(92vh, 980px);        /* ارتفاع أكبر */
+      }
+      :root{
+        --circle: 76px;                  /* تكبير الأيقونات */
+      }
+      .marquee{ height:50px; }           /* شريط سفلي أرتب */
+      .marquee p{ font-size:20px; }
+      .btn-label{ font-size:15px; }
+    }
+    @media (min-width: 1440px){
+      .frame{
+        width: min(760px, 48vw);         /* شكل فخم على الشاشات العريضة */
+      }
+      :root{ --circle: 84px; }
+      .marquee p{ font-size:22px; }
+    }
   </style>
 </head>
 <body>
   <div class="frame" aria-label="مطابق للصورة">  
     <!-- 1) -->
     <section class="hero">
-      <!-- استبدلت النص بصورة محلية فقط -->
       <img class="hero-img" src="فاست.jpg" alt="صورة">
     </section>
 
-    <!-- 2) 6 أزرار دائرية: تفتح صفحة مباشرة + تسميات تحت كل زر -->
+    <!-- 2) 6 أزرار -->
     <section class="icons-panel">
       <div class="icon-item">
         <button class="round maroon" data-url="index1.html" title="شراء">
@@ -159,23 +173,22 @@
     </section>
 
     <!-- 3) -->
-   <section class="image-box">
-  <img class="image-img" src="صوره .jpg" alt="صوره">
-</section>
+    <section class="image-box">
+      <img class="image-img" src="صوره .jpg" alt="صوره">
+    </section>
 
     <!-- 4) -->
     <section class="marquee"><p id="ticker">
-    فاســــت كويــنز لخدمات الدفـــع الأ كتروني — فاســــت كويــنز لخدمات الدفـــع الأ كتروني — فاســــت كويــنز لخدمات الدفـــع الأ كتروني —
-  </p>
-</section>
+      فاســــت كويــنز لخدمات الدفـــع الأ كتروني — فاســــت كويــنز لخدمات الدفـــع الأ كتروني — فاســــت كويــنز لخدمات الدفـــع الأ كتروني —
+    </p></section>
 
   </div>
   <script>
-    // فتح صفحة مباشرة في نفس التبويب (بدون جوجل، وبدون تبويب جديد)
+    // فتح صفحة مباشرة في نفس التبويب
     document.querySelectorAll('.round[data-url]').forEach(btn=>{
       btn.addEventListener('click',()=>{
         const url = btn.getAttribute('data-url');
-        location.href = url; // ← انتقال مباشر
+        location.href = url;
       });
     });
   </script>
