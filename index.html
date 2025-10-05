@@ -1,0 +1,176 @@
+<!DOCTYPE html><html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title></title>
+  <style>
+    /* ——— ألوان مطابقة للصورة تماماً (مسطحة/بدون تدرجات) ——— */
+    :root{
+      --teal:#0f766e;   /* الشريطين الأخضرين */
+      --panel:#ededed;  /* صندوق الأيقونات */
+      --ink:#3b3b3b;    /* لون النص */
+      --mauve:#cdbfc0;  /* الشريط السفلي */
+      --radius-xl:24px;
+      --radius-lg:22px;
+      --circle:66px;    /* حجم الدوائر */
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; font-family: system-ui, -apple-system, Segoe UI, Roboto, "Noto Kufi Arabic", Cairo, Tahoma, sans-serif;
+      background:#fff; color:var(--ink);
+      /* الشاشة ثابتة بلا تمرير */
+      height:100vh; overflow:hidden;
+      display:flex; align-items:center; justify-content:center;
+      padding:12px;
+    }
+    /* إطار بنسبة الهاتف ليطابق الصورة حرفياً */
+    .frame{
+      width:min(430px, 96vw);
+      height:min(92vh, 820px);
+      display:grid; grid-template-rows: 30% 34% 22% 10%; gap:14px;
+    }
+
+    /* 1) شريط علوي أخضر */
+    .hero{
+      background:var(--teal); border-radius:0; /* ← بدون انحناء فقط */
+      display:grid; place-items:center; position:relative;
+    }
+    .hero .label{ color:rgba(0,0,0,.5); font-weight:800; font-size:40px; letter-spacing:.2px }
+    /* صورة محلية تغطي الشريط (تضعها أنت باسم ايقونه.png) */
+    .hero .hero-img{
+      width:90%;
+      height:100%;
+      object-fit:cover;
+      display:block;
+    }
+
+    /* 2) صندوق الأيقونات 2×3 بنفس ألوان/ترتيب الصورة */
+    .icons-panel{
+      background:var(--panel); border-radius:var(--radius-lg); padding:14px;
+      display:grid; grid-template-columns:repeat(3,1fr); grid-auto-rows:1fr; align-items:center; justify-items:center; gap:14px;
+    }
+    .round{
+      width:var(--circle); height:var(--circle); border-radius:999px; display:grid; place-items:center; cursor:pointer; position:relative;
+      /* حلقتان بيضاوان كما في الصورة */
+      box-shadow: 0 0 0 3px #fff, 0 0 0 6px rgba(255,255,255,.9);
+    }
+    .round img{ width:54%; height:54%; object-fit:contain }
+    /* ألوان الدوائر وترتيبها: (أعلى) خمري، ليموني، بنفسجي — (أسفل) أزرق فاتح، أخضر، أصفر */
+    .maroon{ background:#7b173e }
+    .lime  { background:#9acd32 }
+    .purple{ background:#5b3ea6 }
+    .sky   { background:#cfe6ff }
+    .green { background:#0ea37b }
+    .amber { background:#f2c230 }
+
+    /* 3) شريط أخضر ثانٍ + كلمة "صوره" */
+    .image-box{
+      background:var(--teal); border-radius:var(--radius-xl);
+      display:grid; place-items:center; position:relative;
+    }
+    .image-box .label{ color:rgba(0,0,0,.5); font-weight:800; font-size:26px }
+
+    /* 4) شريط متحرك */
+    .marquee{
+      background:var(--mauve); border-radius:var(--radius-lg); display:grid; align-items:center; overflow:hidden; position:relative; height:44px; padding:0px 8px;
+    }
+    .marquee p{
+      white-space:nowrap; font-weight:800; font-size:18px; color:rgba(0,0,0,.7); will-change:transform;
+      animation:scrollR 28s linear infinite;
+    }
+    @keyframes scrollR{ from{ transform:translateX(-100%) } to{ transform:translateX(100%) } }
+
+    /* تسميات الأزرار (أضفتها فقط تحت كل زر) */
+    .icon-item{ display:grid; justify-items:center; align-content:start; gap:6px }
+    .btn-label{ font-weight:800; font-size:14px; color:var(--ink) }
+
+    /* لمس ناعم */
+    .round, .hero, .image-box, .icons-panel, .bar{ -webkit-tap-highlight-color: transparent; }
+    
+    .image-box .image-img{
+  width:100%;
+  height:100%;
+  object-fit:cover;   /* تغطي كامل الصندوق بدون تشويه */
+  display:block;
+  border-radius:inherit; /* تحافظ على نفس تقويس الصندوق */
+} 
+    
+  </style>
+</head>
+<body>
+  <div class="frame" aria-label="مطابق للصورة">  
+    <!-- 1) -->
+    <section class="hero">
+      <!-- استبدلت النص بصورة محلية فقط -->
+      <img class="hero-img" src="فاست.jpg" alt="صورة">
+    </section>
+
+    <!-- 2) 6 أزرار دائرية: تفتح صفحة مباشرة + تسميات تحت كل زر -->
+    <section class="icons-panel">
+      <div class="icon-item">
+        <button class="round maroon" data-url="index1.html" title="شراء">
+          <img src="شراء.png" alt="" onerror="this.style.display='none'" />
+        </button>
+        <div class="btn-label">شراء</div>
+      </div>
+
+      <div class="icon-item">
+        <button class="round lime" data-url="index2.html" title="بيع">
+          <img src="بيع.png" alt="" onerror="this.style.display='none'" />
+        </button>
+        <div class="btn-label">بيع</div>
+      </div>
+
+      <div class="icon-item">
+        <button class="round purple" data-url="index3.html" title="الموقع">
+          <img src="الموقع.png" alt="" onerror="this.style.display='none'" />
+        </button>
+        <div class="btn-label">الموقع</div>
+      </div>
+
+      <div class="icon-item">
+        <button class="round sky" data-url="index4.html" title="عنا">
+          <img src="عنت.png" alt="" onerror="this.style.display='none'" />
+        </button>
+        <div class="btn-label">عنا</div>
+      </div>
+
+      <div class="icon-item">
+        <button class="round green" data-url="index5.html" title="خدمت العملاء">
+          <img src="خدمت.png" alt="" onerror="this.style.display='none'" />
+        </button>
+        <div class="btn-label">خدمت العملاء</div>
+      </div>
+
+      <div class="icon-item">
+        <button class="round amber" data-url="index6.html" title="الاعدادت">
+          <img src="الاعدادات.png" alt="" onerror="this.style.display='none'" />
+        </button>
+        <div class="btn-label">الاعدادت</div>
+      </div>
+    </section>
+
+    <!-- 3) -->
+   <section class="image-box">
+  <img class="image-img" src="صوره .jpg" alt="صوره">
+</section>
+
+    <!-- 4) -->
+    <section class="marquee"><p id="ticker">
+    فاســــت كويــنز لخدمات الدفـــع الأ كتروني — فاســــت كويــنز لخدمات الدفـــع الأ كتروني — فاســــت كويــنز لخدمات الدفـــع الأ كتروني —
+  </p>
+</section>
+
+  </div>
+  <script>
+    // فتح صفحة مباشرة في نفس التبويب (بدون جوجل، وبدون تبويب جديد)
+    document.querySelectorAll('.round[data-url]').forEach(btn=>{
+      btn.addEventListener('click',()=>{
+        const url = btn.getAttribute('data-url');
+        location.href = url; // ← انتقال مباشر
+      });
+    });
+  </script>
+</body>
+</html>

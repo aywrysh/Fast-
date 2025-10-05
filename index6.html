@@ -1,0 +1,306 @@
+<!DOCTYPE html><html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>أسعار العملات — بث حي مع احتياطي تلقائي</title>
+<style>
+  :root{
+    --bg:#0b1022; --card:#121634; --ink:#e7ebff; --muted:#a7b0da;
+    --up:#22c55e; --down:#ef4444; --line:#222955; --brand:#22d3ee;
+    --radius:14px;
+  }
+  *{box-sizing:border-box}
+  body{
+    margin:0; font-family:system-ui,Segoe UI,Roboto,"Noto Kufi Arabic",Cairo,Tahoma,sans-serif;
+    background:
+      radial-gradient(900px 420px at 95% -10%, rgba(124,58,237,.18), transparent 60%),
+      radial-gradient(800px 400px at -10% 110%, rgba(34,211,238,.16), transparent 60%),
+      var(--bg);
+    color:var(--ink);
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:14px;
+  }
+  .wrap{width:min(1100px,96vw)}
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between; gap:10px;
+    background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12);
+    backdrop-filter:saturate(140%) blur(6px);
+    border-radius:12px; padding:10px 14px; margin-bottom:12px;
+  }
+  .title{font-weight:900}
+  .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
+  .pill{font-size:11px; opacity:.9; background:#0e1330; border:1px solid rgba(255,255,255,.12);
+        padding:6px 10px; border-radius:999px; white-space:nowrap}
+  .pill.ok{border-color:rgba(52,211,153,.5); color:#caffde}
+  .pill.err{border-color:rgba(239,68,68,.6); color:#ffd2d2}
+  .pill.warn{border-color:rgba(245,158,11,.6); color:#ffe7bf}
+
+  .card{background:linear-gradient(180deg,rgba(255,255,255,.03),rgba(255,255,255,.02));
+        border:1px solid rgba(255,255,255,.12); border-radius:var(--radius); padding:10px;}
+  .scroller{overflow:auto; max-height:78vh}
+  table{width:100%; border-collapse:separate; border-spacing:0}
+  thead th{
+    text-align:right; font-size:12px; color:var(--muted); font-weight:700;
+    padding:10px; position:sticky; top:0; background:#0f1330; z-index:2;
+  }
+  tbody td{padding:10px; border-top:1px solid var(--line); vertical-align:middle}
+  .sym{font-weight:900}
+  .pair{color:var(--muted); font-size:12px}
+  .price{font-variant-numeric:tabular-nums; direction:ltr}
+  .chg{font-variant-numeric:tabular-nums}
+  .up{color:var(--up)} .down{color:var(--down)}
+  footer{opacity:.7; font-size:12px; text-align:center; margin-top:10px}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div class="title">أسعار العملات المباشرة</div>
+      <div class="row">
+        <div class="pill">تحديث واجهة: 0.5 ثانية</div>
+        <div class="pill" id="srcPill">المصدر: Binance WS</div>
+        <div class="pill ok" id="statePill">الحالة: متصل</div>
+        <div class="pill" id="ts">—</div>
+      </div>
+    </div>
+
+    <div class="card scroller">
+      <table id="tbl">
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>العملة</th>
+            <th>السعر (USDT)</th>
+            <th>اتجاه</th>
+          </tr>
+        </thead>
+        <tbody id="body">
+          <!-- يُملأ تلقائيًا -->
+        </tbody>
+      </table>
+    </div>
+
+    <footer>إنقطاع البث؟ يتم التحويل تلقائيًا إلى جلب دوري من Binance ثم CoinGecko.</footer>
+  </div>
+
+<script>
+(() => {
+  const body = document.getElementById('body');
+  const ts = document.getElementById('ts');
+  const statePill = document.getElementById('statePill');
+  const srcPill = document.getElementById('srcPill');
+
+  const LIMIT = 30; // عدد العملات
+  const UI_INTERVAL = 500; // تحديث الواجهة
+  const REST_BINANCE = 'https://api.binance.com/api/v3/ticker/24hr';
+  const BINANCE_WS_BASE = 'wss://stream.binance.com:9443/stream?streams='; // combined
+  const CG_LIST = 'https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&per_page=30&page=1&order=market_cap_desc&sparkline=false';
+
+  const fmt = (v) => {
+    v = Number(v);
+    if (!isFinite(v)) return '—';
+    const opts = v >= 1 ? {minimumFractionDigits:2, maximumFractionDigits:2}
+                        : {minimumFractionDigits:2, maximumFractionDigits:6};
+    return new Intl.NumberFormat('en-US', opts).format(v);
+  };
+
+  let LIST = [];        // [{symbol:'BTCUSDT', base:'BTC', price:...}, ...]
+  let PREV = {};        // {symbol: lastDisplayedPrice}
+  let BUF = {};         // {symbol: latestPrice}
+  let uiTimer = null;
+  let ws = null, closed = false, backoff = 1000;
+  let pollTimer = null;   // REST Binance
+  let cgTimer = null;     // REST CoinGecko
+
+  function setState(ok, msg, warn=false){
+    statePill.className = 'pill ' + (ok ? 'ok':'err');
+    statePill.textContent = 'الحالة: ' + (ok ? 'متصل' : 'منفصل');
+    if (msg) statePill.textContent += ' — ' + msg;
+    srcPill.className = 'pill' + (warn ? ' warn' : '');
+  }
+
+  function clock() { ts.textContent = new Date().toLocaleTimeString('en-GB'); }
+
+  function buildRows(){
+    body.innerHTML = '';
+    const frag = document.createDocumentFragment();
+    LIST.forEach((it, i) => {
+      const tr = document.createElement('tr');
+      tr.id = 'row-' + it.symbol;
+      tr.innerHTML = `
+        <td>${i+1}</td>
+        <td>
+          <div class="sym">${it.base}</div>
+          <div class="pair">${it.symbol}</div>
+        </td>
+        <td class="price" data-prev="">—</td>
+        <td class="chg"><span>—</span></td>
+      `;
+      frag.appendChild(tr);
+      PREV[it.symbol] = NaN;
+    });
+    body.appendChild(frag);
+  }
+
+  function updateUI(){
+    let touched = false;
+    for (const sym in BUF){
+      const val = Number(BUF[sym]);
+      const row = document.getElementById('row-' + sym);
+      if (!row) continue;
+      const priceCell = row.querySelector('.price');
+      const chgCell = row.querySelector('.chg');
+      const prev = Number(priceCell.getAttribute('data-prev'));
+
+      priceCell.textContent = fmt(val);
+      priceCell.setAttribute('data-prev', String(val));
+
+      if (isFinite(prev)) {
+        if (val > prev) chgCell.innerHTML = `<span class="up">▲</span>`;
+        else if (val < prev) chgCell.innerHTML = `<span class="down">▼</span>`;
+        else chgCell.innerHTML = `<span>—</span>`;
+      }
+      PREV[sym] = val;
+      delete BUF[sym];
+      touched = true;
+    }
+    if (touched) clock();
+  }
+
+  function startUI(){
+    if (uiTimer) clearInterval(uiTimer);
+    uiTimer = setInterval(updateUI, UI_INTERVAL);
+  }
+
+  // —— احتياطي CoinGecko —— //
+  async function pollCoinGecko(){
+    try{
+      const r = await fetch(CG_LIST, {cache:'no-store'});
+      const j = await r.json();
+      if (!Array.isArray(j) || !j.length) throw new Error('CG empty');
+      if (!LIST.length){
+        LIST = j.slice(0, LIMIT).map((x,i)=>({
+          symbol: (x.symbol||'').toUpperCase()+'USDT',
+          base: (x.symbol||'').toUpperCase(),
+          price: Number(x.current_price)||0
+        }));
+        buildRows();
+      }
+      j.slice(0, LIMIT).forEach(x=>{
+        const sym = (x.symbol||'').toUpperCase()+'USDT';
+        BUF[sym] = x.current_price;
+      });
+      srcPill.textContent = 'المصدر: CoinGecko (احتياطي)';
+      setState(false, 'REST', true);
+    }catch(e){
+      srcPill.textContent = 'تعذّر جميع المصادر — أعد المحاولة';
+      setState(false, 'لا اتصال', true);
+    }
+  }
+  function startCG(){
+    stopAllPolling();
+    pollCoinGecko();
+    cgTimer = setInterval(pollCoinGecko, 5000);
+  }
+
+  // —— احتياطي Binance REST —— //
+  async function pollBinance(symbols){
+    try{
+      const url = REST_BINANCE + '?symbols=' + encodeURIComponent(JSON.stringify(symbols));
+      const r = await fetch(url, {cache:'no-store'});
+      const j = await r.json();
+      if (!Array.isArray(j)) throw new Error('Binance REST bad');
+      j.forEach((x)=>{
+        BUF[x.symbol] = x.lastPrice || x.weightedAvgPrice || x.prevClosePrice;
+      });
+      srcPill.textContent = 'المصدر: Binance REST (احتياطي)';
+      setState(false, 'Polling', true);
+    }catch(e){
+      // سقط Binance أيضًا؟ ننتقل إلى CoinGecko
+      startCG();
+    }
+  }
+  function startBinancePolling(symbols){
+    stopAllPolling();
+    pollBinance(symbols);
+    pollTimer = setInterval(()=>pollBinance(symbols), 2000);
+  }
+
+  function stopAllPolling(){
+    if (pollTimer){ clearInterval(pollTimer); pollTimer = null; }
+    if (cgTimer){ clearInterval(cgTimer); cgTimer = null; }
+  }
+
+  // —— Binance WS —— //
+  function openWS(symbols){
+    try{
+      const streams = symbols.map(s=>s.toLowerCase()+'@miniticker').join('/');
+      const url = BINANCE_WS_BASE + streams;
+      ws = new WebSocket(url);
+
+      ws.onopen = () => {
+        srcPill.textContent = 'المصدر: Binance WS';
+        setState(true, '', false);
+        stopAllPolling();
+        backoff = 1000;
+      };
+
+      ws.onmessage = (ev) => {
+        try{
+          const m = JSON.parse(ev.data);
+          const d = m.data || m; // combined أو فردي
+          // d.s = symbol, d.c = last price
+          if (d && d.s && d.c) BUF[d.s] = d.c;
+        }catch(_){}
+      };
+
+      ws.onerror = () => {
+        setState(false, 'خطأ WS', true);
+        startBinancePolling(symbols);
+      };
+
+      ws.onclose = () => {
+        setState(false, 'مغلق WS', true);
+        startBinancePolling(symbols);
+        if (!closed){
+          const wait = Math.min(backoff, 5000);
+          setTimeout(()=> openWS(symbols), wait);
+          backoff *= 1.7;
+        }
+      };
+    }catch(e){
+      setState(false, 'استثناء WS', true);
+      startBinancePolling(symbols);
+    }
+  }
+
+  // —— تهيئة: جلب أفضل أزواج USDT من Binance —— //
+  async function init(){
+    try{
+      const r = await fetch(REST_BINANCE, {cache:'no-store'});
+      const j = await r.json();
+      // نرشّح أزواج USDT فقط ونرتّبها حسب حجم الاقتباس (quoteVolume) تنازليًا
+      const usdt = j.filter(x => x.symbol && x.symbol.endsWith('USDT'));
+      usdt.sort((a,b)=> Number(b.quoteVolume||0) - Number(a.quoteVolume||0));
+      const top = usdt.slice(0, LIMIT);
+      LIST = top.map(x=>({symbol:x.symbol, base:x.symbol.replace('USDT',''), price:Number(x.lastPrice||0)}));
+      buildRows();
+      openWS(top.map(x=>x.symbol)); // افتح WS
+      startUI();
+    }catch(e){
+      // لو فشل حتى أول طلب من Binance، ننتقل إلى CoinGecko مباشرة
+      startUI();
+      startCG();
+    }
+  }
+
+  init();
+
+  // تنظيف
+  window.addEventListener('beforeunload', () => {
+    closed = true; try{ ws && ws.close(); }catch(e){}
+    stopAllPolling(); if (uiTimer) clearInterval(uiTimer);
+  });
+})();
+</script>
+</body>
+</html>

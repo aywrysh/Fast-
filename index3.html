@@ -1,0 +1,197 @@
+<!DOCTYPE html><html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>فاست كوينز — موقعنا</title>
+<style>
+:root{
+  --bg:#0e132b; --ink:#eef2ff; --muted:#b5c0ff;
+  --brand:#22d3ee; --brand2:#a78bfa; --card:#111633;
+  --line:#2a2f57; --ok:#34d399; --warn:#f59e0b;
+  --radius:18px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; font-family:system-ui,-apple-system,"Noto Kufi Arabic",Cairo,Segoe UI,Roboto,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(900px 420px at 12% -10%, rgba(34,211,238,.18), transparent 60%),
+    radial-gradient(1000px 520px at 110% 110%, rgba(167,139,250,.22), transparent 60%),
+    linear-gradient(180deg,#0b1026,#0e132b 45%,#090e22);
+  min-height:100vh;
+}
+
+/* Topbar */
+.topbar{
+  position:sticky; top:0; z-index:20;
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:12px 14px; margin:10px;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);
+  backdrop-filter:saturate(160%) blur(8px);
+  border-radius:14px;
+}
+.brand{font-weight:900; letter-spacing:.3px}
+.badge{font-weight:800; color:var(--brand); opacity:.95}
+
+/* Layout */
+.wrap{width:min(820px,96vw); margin:0 auto 18px auto}
+.card{
+  background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:var(--radius); padding:16px; margin:12px 10px;
+}
+h2{margin:0 0 8px 0; font-size:20px}
+p{margin:6px 0; color:var(--muted)}
+
+/* Info rows */
+.row{display:grid; gap:10px}
+.chips{display:flex; flex-wrap:wrap; gap:8px}
+.chip{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 12px; border-radius:999px;
+  background:#0f1537; border:1px solid rgba(255,255,255,.12);
+  color:#dfe4ff; font-weight:700;
+}
+.chip svg{width:18px;height:18px;opacity:.9}
+
+/* Map */
+.mapbox{border-radius:16px; overflow:hidden; border:1px solid rgba(255,255,255,.16)}
+.mapbox iframe{width:100%; height:48vh; display:block; border:0}
+
+/* Actions */
+.actions{display:flex; flex-wrap:wrap; gap:10px; margin-top:12px}
+.btn{
+  border:none; cursor:pointer; border-radius:12px; padding:12px 14px; font-weight:900;
+  display:inline-flex; align-items:center; gap:8px;
+}
+.btn svg{width:18px;height:18px}
+.btn.primary{background:linear-gradient(90deg,var(--brand),var(--brand2)); color:#09121b}
+.btn.ghost{background:rgba(255,255,255,.06); color:var(--ink); border:1px solid rgba(255,255,255,.12)}
+.btn.ok{background:var(--ok); color:#072116}
+.btn.warn{background:var(--warn); color:#201100}
+
+small.note{display:block; margin-top:6px; color:var(--muted); opacity:.9}
+footer{opacity:.75; font-size:12px; text-align:center; padding:10px}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="topbar">
+    <div class="brand">موقعنا</div>
+    <div class="badge">Fast Coins • فاست كوينز</div>
+  </header>
+
+  <!-- العنوان الرئيسي -->
+  <section class="card">
+    <h2>العنوان</h2>
+    <div class="chips">
+      <span class="chip">
+        <!-- pin -->
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7zm0 9.5A2.5 2.5 0 1 1 12 6a2.5 2.5 0 0 1 0 5z"/></svg>
+        المركز الرئيسي: اليمن • ذمار • مدينة الشرق • خط عتمة الجديد • بجانب سبأ وحِمير للصرافة
+      </span>
+      <span class="chip">
+        <!-- branch -->
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 3h10v4H7zM4 9h16v2H4zm2 4h12v2H6zm3 4h6v2H9z"/></svg>
+        الفروع الأخرى: قريباً
+      </span>
+      <span class="chip" id="coordChip">
+        <!-- coords -->
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5h2v14H3zM19 5h2v14h-2zM7 3h10v2H7zm0 16h10v2H7z"/></svg>
+        الإحداثيات: <b id="coordsTxt">14.638814, 43.956066</b>
+      </span>
+    </div>
+  </section>
+
+  <!-- خريطة حية -->
+  <section class="card">
+    <h2>الخريطة</h2>
+    <div class="mapbox">
+      <iframe id="mapFrame" loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen></iframe>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="goBtn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l7 20-7-4-7 4 7-20z"/></svg>
+        ابدأ التوجيه
+      </button>
+      <button class="btn ghost" id="gmapBtn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a7 7 0 0 0-7 7c0 5.25 7 13 7 13s7-7.75 7-13a7 7 0 0 0-7-7z"/></svg>
+        افتح في خرائط جوجل
+      </button>
+      <button class="btn ghost" id="appleBtn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3l10 7-10 7L2 10l10-7z"/></svg>
+        افتح في خرائط أبل
+      </button>
+      <button class="btn ok" id="copyBtn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M16 1H4a2 2 0 0 0-2 2v12h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14h13a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/></svg>
+        نسخ الإحداثيات
+      </button>
+      <button class="btn warn" id="waBtn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg>
+        مشاركة عبر واتساب
+      </button>
+    </div>
+    <small class="note">يمكنك التكبير/التصغير داخل الخريطة أو فتحها مباشرة في تطبيق الخرائط.</small>
+  </section>
+
+  <footer>© <span id="y"></span> Fast Coins — موقعنا</footer>
+</div>
+
+<script>
+const LAT = 14.638814, LNG = 43.956066;
+const mapFrame = document.getElementById('mapFrame');
+const y = document.getElementById('y'); y.textContent = new Date().getFullYear();
+
+// خريطة مضمّنة (واجهة عربية + تقريب مناسب)
+mapFrame.src = `https://www.google.com/maps?q=${LAT},${LNG}&hl=ar&z=16&output=embed`;
+
+// أزرار
+const gUrl = `https://maps.google.com/?q=${LAT},${LNG}`;
+const appleUrl = `https://maps.apple.com/?ll=${LAT},${LNG}&q=Fast%20Coins`;
+
+document.getElementById('gmapBtn').onclick = ()=> window.open(gUrl, '_blank');
+document.getElementById('appleBtn').onclick = ()=> window.open(appleUrl, '_blank');
+
+document.getElementById('copyBtn').onclick = async ()=>{
+  const text = `${LAT}, ${LNG}`;
+  try{
+    await navigator.clipboard.writeText(text);
+    document.getElementById('copyBtn').textContent = 'تم النسخ ✓';
+    setTimeout(()=>document.getElementById('copyBtn').textContent='نسخ الإحداثيات',1200);
+  }catch(e){ alert('انسخ يدويًا: ' + text); }
+};
+
+// ابدأ التوجيه: نستخدم الموقع الحالي إن سمح المتصفح
+document.getElementById('goBtn').onclick = ()=>{
+  const dest = `${LAT},${LNG}`;
+  if(navigator.geolocation){
+    navigator.geolocation.getCurrentPosition(
+      pos=>{
+        const o = `${pos.coords.latitude},${pos.coords.longitude}`;
+        const url = `https://www.google.com/maps/dir/?api=1&origin=${o}&destination=${dest}&travelmode=driving`;
+        window.open(url,'_blank');
+      },
+      _=>{
+        window.open(`https://www.google.com/maps/dir/?api=1&destination=${dest}&travelmode=driving`,'_blank');
+      }, {timeout:5000}
+    );
+  }else{
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${dest}&travelmode=driving`,'_blank');
+  }
+};
+
+// مشاركة واتساب
+document.getElementById('waBtn').onclick = ()=>{
+  const txt =
+`📍 فاست كوينز — موقعنا
+العنوان: اليمن، ذمار، مدينة الشرق، خط عتمة الجديد، بجانب سبأ وحِمير للصرافة
+الإحداثيات: ${LAT}, ${LNG}
+الموقع على الخرائط: ${gUrl}`;
+  window.open(`https://wa.me/?text=${encodeURIComponent(txt)}`,'_blank');
+};
+</script>
+</body>
+</html>

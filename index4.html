@@ -1,0 +1,340 @@
+<!DOCTYPE html><html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>فاست كوينز — عَنّا</title>
+<style>
+:root{
+  --bg:#0e132b; --ink:#eef2ff; --muted:#b5c0ff;
+  --brand:#22d3ee; --brand2:#a78bfa; --card:#111633;
+  --line:#2a2f57; --ok:#34d399; --warn:#f59e0b; --err:#ef4444;
+  --radius:18px;
+}
+*{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0; font-family:system-ui,-apple-system,"Noto Kufi Arabic",Cairo,Segoe UI,Roboto,sans-serif;
+  color:var(--ink);
+  background:
+    radial-gradient(900px 420px at 12% -10%, rgba(34,211,238,.18), transparent 60%),
+    radial-gradient(1000px 520px at 110% 110%, rgba(167,139,250,.22), transparent 60%),
+    linear-gradient(180deg,#0b1026,#0e132b 45%,#090e22);
+  min-height:100vh;
+}
+
+/* Topbar */
+.topbar{
+  position:sticky; top:0; z-index:20;
+  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  padding:12px 14px; margin:10px auto;
+  border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.06);
+  backdrop-filter:saturate(160%) blur(8px);
+  border-radius:14px;
+  width:min(960px,96vw);
+}
+.brand{font-weight:900; letter-spacing:.3px}
+.badge{font-weight:800; color:var(--brand); opacity:.95}
+
+/* Layout */
+.wrap{width:min(960px,96vw); margin:0 auto 18px auto}
+.card{
+  background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.02));
+  border:1px solid rgba(255,255,255,.12);
+  border-radius:var(--radius); padding:18px; margin:12px 0;
+}
+h1{margin:0 0 10px 0; font-size:28px}
+h2{margin:0 0 8px 0; font-size:20px}
+p{margin:6px 0; color:var(--muted); line-height:1.9}
+
+.hero{
+  position:relative; overflow:hidden;
+  padding:26px 18px;
+  border-radius:var(--radius);
+  border:1px solid rgba(255,255,255,.12);
+  background:
+    linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.03));
+}
+.hero .title{font-size:28px; font-weight:900}
+.hero .sub{color:#dfe4ff; opacity:.95; margin-top:6px}
+.glow{
+  position:absolute; inset:-40%; pointer-events:none; filter:blur(60px);
+  background:
+    radial-gradient(600px 240px at 20% 10%, rgba(34,211,238,.25), transparent 60%),
+    radial-gradient(600px 240px at 80% 90%, rgba(167,139,250,.28), transparent 60%);
+  animation:float 12s linear infinite alternate;
+}
+@keyframes float{
+  from{transform:translateY(-10px) rotate(0deg)} to{transform:translateY(10px) rotate(1deg)}
+}
+
+.actions{display:flex; flex-wrap:wrap; gap:10px; margin-top:12px}
+.btn{
+  border:none; cursor:pointer; border-radius:12px; padding:12px 14px; font-weight:900;
+  display:inline-flex; align-items:center; gap:8px;
+}
+.btn svg{width:18px;height:18px}
+.btn.primary{background:linear-gradient(90deg,var(--brand),var(--brand2)); color:#09121b}
+.btn.ghost{background:rgba(255,255,255,.06); color:var(--ink); border:1px solid rgba(255,255,255,.12)}
+.btn.ok{background:var(--ok); color:#072116}
+.btn.warn{background:var(--warn); color:#201100}
+
+.row{display:grid; gap:12px}
+.grid{display:grid; gap:12px}
+@media(min-width:820px){ .grid-2{grid-template-columns:1fr 1fr} .grid-3{grid-template-columns:repeat(3,1fr)} }
+
+.badges{display:flex; flex-wrap:wrap; gap:8px}
+.badge2{
+  display:inline-flex; align-items:center; gap:8px;
+  padding:10px 12px; border-radius:999px;
+  background:#0f1537; border:1px solid rgba(255,255,255,.12);
+  color:#dfe4ff; font-weight:700;
+}
+.badge2 svg{width:18px;height:18px;opacity:.9}
+
+/* Feature cards */
+.feature{
+  padding:14px; border-radius:16px; border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.03);
+}
+.feature h3{margin:6px 0 6px 0}
+.feature p{margin:0}
+
+/* Steps */
+.step{
+  display:flex; gap:12px; align-items:flex-start;
+  padding:12px; border:1px dashed rgba(255,255,255,.18); border-radius:12px; background:rgba(255,255,255,.03);
+}
+.num{
+  width:34px;height:34px;border-radius:999px; display:grid; place-items:center; font-weight:900;
+  background:linear-gradient(90deg,var(--brand),var(--brand2)); color:#0b1026;
+}
+
+/* Counters */
+.counters{display:grid; gap:10px; grid-template-columns:repeat(auto-fit,minmax(160px,1fr))}
+.counter{
+  text-align:center; padding:12px; border-radius:14px; border:1px solid rgba(255,255,255,.12);
+  background:rgba(255,255,255,.03);
+}
+.counter .big{font-size:28px; font-weight:900}
+.counter .cap{color:var(--muted); font-weight:700}
+
+/* FAQ */
+.faq .item{border:1px solid rgba(255,255,255,.12); border-radius:14px; overflow:hidden; margin-bottom:10px}
+.faq .q{
+  display:flex; justify-content:space-between; align-items:center; gap:10px;
+  padding:12px 14px; background:rgba(255,255,255,.04); cursor:pointer; font-weight:800;
+}
+.faq .a{display:none; padding:12px 14px; background:rgba(255,255,255,.02); color:var(--muted); line-height:1.9}
+.faq .item.open .a{display:block}
+
+/* Link block */
+.linkblock{
+  display:flex; flex-wrap:wrap; gap:10px; align-items:center;
+  background:rgba(255,255,255,.04); border:1px solid rgba(255,255,255,.12); border-radius:14px; padding:12px;
+}
+
+/* Footer */
+footer{opacity:.75; font-size:12px; text-align:center; padding:12px}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="brand">عَنّا</div>
+  <div class="badge">Fast Coins • فاست كوينز</div>
+</div>
+
+<div class="wrap">
+
+  <!-- HERO -->
+  <section class="hero card">
+    <div class="glow"></div>
+    <div class="title">نحن فاست كوينز — بوابتك الذكية للدفع الإلكتروني والعملات الرقمية</div>
+    <div class="sub">
+      نوفّر لك تجربة شراء وبيع وشحن آمنة وسريعة بأسعار واضحة ودعم حقيقي. مهمتنا تبسيط التعاملات الرقمية
+      في اليمن وخارجها، مع معايير أمان وخصوصية عالية، وخدمة عملاء تقفل معك الموضوع من أول مرة.
+    </div>
+    <div class="actions">
+      <a class="btn primary" href="buy.html">
+        <!-- cart -->
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M7 4h-2l-1 2v2h2l3.6 7.59-1.35 2.41A1 1 0 0 0 9 20h10v-2H9.42l.93-1.62h7.65a1 1 0 0 0 .92-.62l3-7A1 1 0 0 0 21 7H7.21l-.94-3z"/></svg>
+        ابدأ الآن
+      </a>
+      <button class="btn ghost" id="waBtn">
+        <!-- whatsapp -->
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4a2 2 0 0 0-2 2v18l4-4h14a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2z"/></svg>
+        تواصل واتساب
+      </button>
+    </div>
+  </section>
+
+  <!-- نبذة مختصرة -->
+  <section class="card">
+    <h2>من نحن</h2>
+    <p>
+      وُلدت فاست كوينز من حاجة بسيطة وواضحة: طرق دفع رقمية تكون
+      <b>موثوقة، سريعة، ومفهومة</b> للجميع. من أول يوم ركّزنا على ثلاث ركائز:
+      <b>الأمان</b> (حماية بياناتك ومعاملاتك)، <b>الوضوح</b> (سعر صريح بدون لف)، و<b>الخدمة</b> (إنجاز طلبك بدون دوخة).
+      اليوم نخدم أفراد وشركات، نوصلهم بعالم الكريبتو والتحويلات المحلية بلمسة واحدة.
+    </p>
+    <div class="badges">
+      <span class="badge2">
+        <!-- shield -->
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2l8 4v6c0 5-3.4 9.3-8 10-4.6-.7-8-5-8-10V6l8-4z"/></svg>
+        أمان ومعايير تحفظ بياناتك
+      </span>
+      <span class="badge2">
+        <!-- bolt -->
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2L3 14h7l-1 8 10-12h-7z"/></svg>
+        سرعة تنفيذ عالية
+      </span>
+      <span class="badge2">
+        <!-- tag -->
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.59 13.41L11 3H4v7l9.59 9.59a2 2 0 0 0 2.82 0l4.18-4.18a2 2 0 0 0 0-2.82zM7 8a2 2 0 1 1 0-4 2 2 0 0 1 0 4z"/></svg>
+        أسعار واضحة بدون مفاجآت
+      </span>
+      <span class="badge2">
+        <!-- headset -->
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 1a9 9 0 0 0-9 9v5a3 3 0 0 0 3 3h2v-8H5a7 7 0 0 1 14 0h-3v8h2a3 3 0 0 0 3-3v-5a9 9 0 0 0-9-9z"/></svg>
+        دعم واتساب مباشر
+      </span>
+    </div>
+  </section>
+
+  <!-- لماذا فاست كوينز -->
+  <section class="card grid grid-3">
+    <div class="feature">
+      <h3>كل شيء في مكان واحد</h3>
+      <p>شراء وبيع USDT، تحويلات محلية، شحن خدمات، وسداد—لوّحك بيدك والباقي علينا.</p>
+    </div>
+    <div class="feature">
+      <h3>تجربة بلا تعقيد</h3>
+      <p>نموذج واضح، خطوات قصيرة، ونتيجة سريعة. ما نحب التعقيد ولا نحب نخليك تنتظر.</p>
+    </div>
+    <div class="feature">
+      <h3>موثوقية ومتابعة</h3>
+      <p>نتابع طلبك حتى يُقفل. لو احتجت تعديل، نعدّل فورًا—الأهم تطلع راضي.</p>
+    </div>
+  </section>
+
+  <!-- كيف نعمل -->
+  <section class="card">
+    <h2>كيف نعمل؟</h2>
+    <div class="grid grid-2">
+      <div class="step"><div class="num">1</div><div><b>تختار العملية</b><br>شراء، بيع، أو تحويل محلي.</div></div>
+      <div class="step"><div class="num">2</div><div><b>تدخل البيانات</b><br>الاسم، الهاتف، المبلغ، وطريقة التحويل.</div></div>
+      <div class="step"><div class="num">3</div><div><b>تنفيذ آمن وسريع</b><br>ننفّذ الطلب بالسعر المعروض وبأمان.</div></div>
+      <div class="step"><div class="num">4</div><div><b>تأكيد واستلام</b><br>رسالة تأكيد + دعم مباشر لو احتجت أي مساعدة.</div></div>
+    </div>
+  </section>
+
+  <!-- ضمانات -->
+  <section class="card grid grid-3">
+    <div class="feature">
+      <h3>ضمان الوقت</h3>
+      <p>نلتزم بزمن تنفيذ واقعي—ونبلغك بكل خطوة تصير.</p>
+    </div>
+    <div class="feature">
+      <h3>ضمان الأمان</h3>
+      <p>حماية بياناتك أولوية. ما نطلب إلا المعلومات اللازمة لإتمام الطلب.</p>
+    </div>
+    <div class="feature">
+      <h3>ضمان الرضا</h3>
+      <p>أي ملاحظة؟ نتعامل معها فورًا لنوصل للنتيجة اللي تناسبك.</p>
+    </div>
+  </section>
+
+  <!-- أرقام حيّة -->
+  <section class="card">
+    <h2>بالأرقام</h2>
+    <div class="counters" id="counters">
+      <div class="counter"><div class="big" data-target="5000">0</div><div class="cap">+ طلب منجز</div></div>
+      <div class="counter"><div class="big" data-target="97">0</div><div class="cap">% رضا عملاء</div></div>
+      <div class="counter"><div class="big" data-target="7">0</div><div class="cap">دقائق متوسّط التنفيذ</div></div>
+      <div class="counter"><div class="big" data-target="24">0</div><div class="cap">/7 دعم على واتساب</div></div>
+    </div>
+  </section>
+
+  <!-- الأسئلة الشائعة -->
+  <section class="card faq">
+    <h2>الأسئلة الشائعة</h2>
+    <div class="item">
+      <div class="q">كيف يتم تحديد السعر؟</div>
+      <div class="a">نستخدم تسعيرة واضحة مُعلنة في صفحات الشراء/البيع. أي رسوم إضافية تُذكر قبل التأكيد—بدون مفاجآت.</div>
+    </div>
+    <div class="item">
+      <div class="q">كم يستغرق تنفيذ طلبي؟</div>
+      <div class="a">غالب الطلبات تُنجز خلال دقائق. في أوقات الذروة قد يزيد قليلًا، ونبلغك فورًا في حال أي تأخير.</div>
+    </div>
+    <div class="item">
+      <div class="q">هل بياناتي آمنة؟</div>
+      <div class="a">أكيد. نلتزم بأقل قدر من البيانات اللازمة، ونحفظها بشكل آمن، ولا نشاركها مع أي طرف ثالث.</div>
+    </div>
+    <div class="item">
+      <div class="q">ماذا لو احتجت تعديل بعد الإرسال؟</div>
+      <div class="a">تواصل فورًا عبر واتساب وسنعالج التعديل قبل الإتمام—هدفنا تنجز وانت مطمئن.</div>
+    </div>
+  </section>
+
+  <!-- روابط سريعة -->
+  <section class="card">
+    <h2>روابط سريعة</h2>
+    <div class="linkblock">
+      <a class="btn ghost" href="index1.html">الشراء</a>
+      <a class="btn ghost" href="index2.html">البيع</a>
+      <a class="btn ghost" href="index3.html">موقعنا</a>
+      <button class="btn primary" id="waBtn2">تواصل واتساب الآن</button>
+    </div>
+    <p class="muted" style="color:var(--muted); margin-top:8px">
+      للمراسلة المباشرة: <b id="waNum">+967 781 400 883</b>
+      <button class="btn ok" id="copyBtn" style="padding:8px 10px;margin-inline-start:6px">نسخ الرقم</button>
+    </p>
+  </section>
+
+  <footer>© <span id="y"></span> Fast Coins — عَنّا</footer>
+</div>
+
+<script>
+// سنة تلقائية
+document.getElementById('y').textContent = new Date().getFullYear();
+
+// فتح/إغلاق الأسئلة
+document.querySelectorAll('.faq .item .q').forEach(q=>{
+  q.addEventListener('click',()=> q.parentElement.classList.toggle('open'));
+});
+
+// أرقام حيّة عند الظهور
+const io = new IntersectionObserver((entries)=>{
+  entries.forEach(e=>{
+    if(e.isIntersecting){
+      const el = e.target; const target = Number(el.dataset.target||0);
+      let cur = 0; const step = Math.ceil(target/60);
+      const t = setInterval(()=>{
+        cur += step; if(cur>=target){cur=target; clearInterval(t);}
+        el.textContent = cur.toString();
+      }, 20);
+      io.unobserve(el);
+    }
+  });
+}, {threshold:0.2});
+document.querySelectorAll('.big[data-target]').forEach(el=> io.observe(el));
+
+// واتساب + نسخ الرقم
+const waNumRaw = '967781400883';
+const waText = encodeURIComponent('مرحبًا فاست كوينز، أحتاج مساعدة/استفسار.');
+function openWA(){ window.open(`https://wa.me/${waNumRaw}?text=${waText}`, '_blank'); }
+document.getElementById('waBtn').onclick = openWA;
+document.getElementById('waBtn2').onclick = openWA;
+
+document.getElementById('copyBtn').onclick = async ()=>{
+  const text = '+'+waNumRaw;
+  try{
+    await navigator.clipboard.writeText(text);
+    const btn = document.getElementById('copyBtn');
+    btn.textContent = 'تم النسخ ✓';
+    setTimeout(()=>btn.textContent='نسخ الرقم',1200);
+  }catch(e){ alert('انسخ يدويًا: '+text); }
+};
+</script>
+</body>
+</html>
